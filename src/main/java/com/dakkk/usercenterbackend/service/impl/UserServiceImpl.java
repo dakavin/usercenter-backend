@@ -34,13 +34,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     private static final String SALT = "dakkk";
 
     @Override
-    public long userRegister(String userAccont, String userPassword, String checkPassword) {
+    public long userRegister(String userAccount, String userPassword, String checkPassword) {
         // 1.校验
         // 输入内容不能为空
-        if (StringUtils.isAnyBlank(userAccont, userPassword, checkPassword)) {
+        if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)) {
             return -1;
         }
-        if (userAccont.length() < 4){
+        if (userAccount.length() < 4){
             return -1;
         }
         if(userPassword.length()<8||checkPassword.length()<8){
@@ -48,7 +48,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
         // 账户不包含特殊字符(放在账户不能重复前面)
         String regEx="\\pP|\\pS|\\s+";
-        Matcher matcher = Pattern.compile(regEx).matcher(userAccont);
+        Matcher matcher = Pattern.compile(regEx).matcher(userAccount);
         if (matcher.find()){
             return -1;
         }
@@ -58,7 +58,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
         // 账户不能重复
         LambdaQueryWrapper<User> lqw = new LambdaQueryWrapper<>();
-        lqw.eq(User::getUserAccount,userAccont);
+        lqw.eq(User::getUserAccount,userAccount);
         long count = this.count(lqw);
         if(count >0){
             return -1;
@@ -68,7 +68,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         String encryPassword = DigestUtils.md5DigestAsHex((SALT+userPassword).getBytes());
         //3. 插入数据
         User user = new User();
-        user.setUserAccount(userAccont);
+        user.setUserAccount(userAccount);
         user.setUserPassword(encryPassword);
         boolean saveResult = this.save(user);
         return saveResult?user.getId():-1;
