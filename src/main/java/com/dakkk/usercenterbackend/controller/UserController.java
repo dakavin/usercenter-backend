@@ -48,6 +48,20 @@ public class UserController {
         return userService.userRegister(userAccount, userPassword, checkPassword);
     }
 
+    @GetMapping("/current")
+    public User getCurrentUser(HttpServletRequest req){
+        Object userObj = req.getSession().getAttribute(USER_LOGIN_STATE);
+        User currentUser = (User) userObj;
+        if(currentUser == null){
+            return null;
+        }
+        //注意不能直接返回当前用户信息，最好实时更新一下（查库）
+        long userId = currentUser.getId();
+        //todo 没有判断用户是否被封号
+        User user = userService.getById(userId);
+        return userService.getSafetyUser(user);
+    }
+
     @PostMapping("login")
     public User userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest req) {
         if (userLoginRequest == null) {
