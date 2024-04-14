@@ -18,9 +18,10 @@ public interface UserService extends IService<User> {
      * @param userAccont    用户账户
      * @param userPassword  用户密码
      * @param checkPassword 校验密码
+     * @param inviteCode 注册邀请码
      * @return 新用户id
      */
-    long userRegister(String userAccont, String userPassword, String checkPassword);
+    long userRegister(String userAccont, String userPassword, String checkPassword,String inviteCode);
 
     /**
      * 用户登录
@@ -36,4 +37,11 @@ public interface UserService extends IService<User> {
      * @return 返回脱敏后的用户
      */
     User getSafetyUser(User originUser);
+
+    /**
+     * 用户注销方法
+     * @param req 获取连接对象
+     * @return 返回 1-注销成功
+     */
+    int userLogout(HttpServletRequest req);
 }

@@ -42,40 +42,41 @@ class UserServiceTest {
         String userAccount = "mikey";
         String userPassword = "";
         String checkPassword = "123456";
-        long res = userService.userRegister(userAccount, userPassword, checkPassword);
+        String inviteCode = "DAKKK";
+        long res = userService.userRegister(userAccount, userPassword, checkPassword,inviteCode);
         Assertions.assertEquals(-1,res);
 
         //校验账户不能小于4位
         userAccount="da";
-        res = userService.userRegister(userAccount, userPassword, checkPassword);
+        res = userService.userRegister(userAccount, userPassword, checkPassword,inviteCode);
         Assertions.assertEquals(-1,res);
 
         //校验密码不能小于8位
         userAccount="mikey";
         userPassword="123456";
-        res = userService.userRegister(userAccount, userPassword, checkPassword);
+        res = userService.userRegister(userAccount, userPassword, checkPassword,inviteCode);
         Assertions.assertEquals(-1,res);
 
         //校验账户不能包含特殊字符
         userAccount="da  kkk";
         userPassword = "12345678";
-        res = userService.userRegister(userAccount, userPassword, checkPassword);
+        res = userService.userRegister(userAccount, userPassword, checkPassword,inviteCode);
         Assertions.assertEquals(-1,res);
 
         //校验 密码和校验密码需要相同
         checkPassword = "123456789";
-        res = userService.userRegister(userAccount, userPassword, checkPassword);
+        res = userService.userRegister(userAccount, userPassword, checkPassword,inviteCode);
         Assertions.assertEquals(-1,res);
 
         //校验 用户不能重复
-        userAccount = "123456";
+        userAccount = "mikeylay";
         checkPassword = "12345678";
-        res = userService.userRegister(userAccount, userPassword, checkPassword);
+        res = userService.userRegister(userAccount, userPassword, checkPassword,inviteCode);
         Assertions.assertEquals(-1,res);
 
         // 最后一次成功
-        userAccount="dakkk";
-        res = userService.userRegister(userAccount, userPassword, checkPassword);
+        userAccount="dakkkkk";
+        res = userService.userRegister(userAccount, userPassword, checkPassword,inviteCode);
         Assertions.assertTrue(res>0);
     }
 }
