@@ -44,13 +44,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
         }
         if (userAccount.length() < 4) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号小于4位");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户账号过短");
         }
         if (userPassword.length() < 8 || checkPassword.length() < 8) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码或二次密码小于8位");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户密码过短");
         }
         if (inviteCode.length() > 5) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "邀请码大于5位");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "邀请码过长");
         }
         // 账户不包含特殊字符(放在账户不能重复前面)
         String regEx = "\\pP|\\pS|\\s+";
@@ -103,23 +103,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "登录参数存在空值");
         }
         if (userAccont.length() < 4) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账户长度小于4位");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账户长度过短");
         }
         if (userPassword.length() < 8) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码长度小于8位");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码长度过短");
         }
         // 账户不包含特殊字符(放在账户不能重复前面)
         String regEx = "\\pP|\\pS|\\s+";
         Matcher matcher = Pattern.compile(regEx).matcher(userAccont);
         if (matcher.find()) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "账户包含特殊字符");
-        }
-        // 账户不能重复
-        QueryWrapper<User> qw = new QueryWrapper<>();
-        qw.eq("userAccount", userAccont);
-        long count = this.count(qw);
-        if (count <= 0) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "没有此账户！");
         }
 
         // 2.密码加密(使用spring自带的工具库进行加密)
