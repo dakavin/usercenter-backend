@@ -129,7 +129,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         // 4. 判断数据库中是否存在该用户
         if (null == loginUser) {
             log.info("user login failed,userAccount connot matched!");
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "此用户不存在");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账户或密码错误");
         }
 
         // 5.用户信息脱敏(调用脱敏方法)
