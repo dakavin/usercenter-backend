@@ -30,6 +30,7 @@ import static com.dakkk.usercenterbackend.constant.UserConstant.*;
  */
 @RestController
 @RequestMapping("/user")
+// @CrossOrigin(origins = {"http://203.195.193.58"},allowCredentials = "true")
 public class UserController {
     @Resource
     private UserService userService;
