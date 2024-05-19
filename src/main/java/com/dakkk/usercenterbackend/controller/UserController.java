@@ -35,7 +35,7 @@ public class UserController {
     @Resource
     private UserService userService;
 
-    @PostMapping("register")
+    @PostMapping("/register")
     public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
         if (userRegisterRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "注册请求参数封装错误");
@@ -68,7 +68,7 @@ public class UserController {
         return ResultUtils.success(userService.getSafetyUser(user));
     }
 
-    @PostMapping("login")
+    @PostMapping("/login")
     public BaseResponse<User> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest req) {
         if (userLoginRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "登录请求参数封装错误");
