@@ -16,3 +16,5 @@ COPY target/usercenter-backend-0.0.1-SNAPSHOT.jar /app/App.jar
 
 # 容器启动时运行 Java 应用
 CMD ["java", "-jar", "/app/App.jar", "--spring.profiles.active=prod"]
+
+# 测试两个库
