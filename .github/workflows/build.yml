@@ -1,6 +1,7 @@
 name: Deploy usercenter-backend
 
 # 触发条件：当代码推送到 master 分支时触发工作流
+# 关闭工作流
 on:
   push:
     branches:
