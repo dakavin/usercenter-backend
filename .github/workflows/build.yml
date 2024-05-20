@@ -1,0 +1,94 @@
+name: Deploy usercenter-backend
+
+# 触发条件：当代码推送到 master 分支时触发工作流
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    # 使用最新的 Ubuntu 作为运行环境
+    runs-on: ubuntu-latest
+
+    steps:
+      # 步骤1：检出代码
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # 步骤2：设置 SSH Key
+      - name: Setup SSH Key
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > deploy_key
+          chmod 600 deploy_key
+
+      # 步骤3：通过 SSH 确保目标路径存在
+      - name: Ensure target directories exist
+        run: |
+          ssh -o StrictHostKeyChecking=no -i deploy_key ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+          mkdir -p /docker-data/usercenter-backend
+          mkdir -p /docker-data/nginx/cert/usercenter-backend-cert
+          mkdir -p /docker-data/nginx/conf.d
+          EOF
+
+      # 步骤4：通过 SSH 复制 Dockerfile 和 JAR 文件到服务器
+      - name: Copy Dockerfile and JAR via SSH
+        uses: appleboy/scp-action@v0.1.1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "Dockerfile"
+          strip_components: 1
+          target: "/docker-data/usercenter-backend/"
+      - name: Copy JAR via SSH
+        uses: appleboy/scp-action@v0.1.1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "target/*.jar"
+          strip_components: 0
+          target: "/docker-data/usercenter-backend/"
+
+      # 步骤5：通过 SSH 构建 Docker 镜像
+      - name: Build Docker image on server
+        run: |
+          ssh -o StrictHostKeyChecking=no -i deploy_key ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+          cd /docker-data/usercenter-backend
+          docker build -t usercenter-backend:v0.0.1 .
+          EOF
+
+      # 步骤6：通过 SSH 复制 SSL 证书到服务器
+      - name: Copy SSL certs via SSH
+        uses: appleboy/scp-action@v0.1.1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "nginx/config.d/usercenter-backend-cert/*"
+          strip_components: 3
+          target: "/docker-data/nginx/cert/usercenter-backend-cert/"
+
+      # 步骤7：通过 SSH 复制 Nginx 配置文件到服务器
+      - name: Copy Nginx config via SSH
+        uses: appleboy/scp-action@v0.1.1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "nginx/config.d/usercenter-backend.conf"
+          strip_components: 2
+          target: "/docker-data/nginx/conf.d/"
+
+      # 步骤8：通过 SSH 重启 Docker 容器
+      - name: Restart Docker container
+        run: |
+          ssh -o StrictHostKeyChecking=no -i deploy_key ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+          docker stop usercenter-backend || true
+          docker rm usercenter-backend || true
+          docker run -d --name usercenter-backend \
+            -p 8080:8080 \
+            usercenter-backend:v0.0.1
+          docker restart nginx
+          EOF
