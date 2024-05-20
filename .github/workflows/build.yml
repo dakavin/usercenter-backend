@@ -16,13 +16,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # 步骤2：设置 SSH Key
+      # 步骤2：设置 Java 环境
+      - name: Set up JDK 8
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '8'
+
+      # 步骤3：使用 Maven 构建项目
+      - name: Build with Maven
+        run: mvn clean package
+
+      # 步骤4：设置 SSH Key
       - name: Setup SSH Key
         run: |
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > deploy_key
           chmod 600 deploy_key
 
-      # 步骤3：通过 SSH 确保目标路径存在
+      # 步骤5：通过 SSH 确保目标路径存在
       - name: Ensure target directories exist
         run: |
           ssh -o StrictHostKeyChecking=no -i deploy_key ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
@@ -31,7 +42,7 @@ jobs:
           mkdir -p /docker-data/nginx/conf.d
           EOF
 
-      # 步骤4：通过 SSH 复制 Dockerfile 和 JAR 文件到服务器
+      # 步骤6：通过 SSH 复制 Dockerfile 和 JAR 文件到服务器
       - name: Copy Dockerfile and JAR via SSH
         uses: appleboy/scp-action@v0.1.1
         with:
@@ -39,7 +50,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "Dockerfile"
-          strip_components: 1
+          strip_components: 0
           target: "/docker-data/usercenter-backend/"
       - name: Copy JAR via SSH
         uses: appleboy/scp-action@v0.1.1
@@ -51,7 +62,7 @@ jobs:
           strip_components: 0
           target: "/docker-data/usercenter-backend/"
 
-      # 步骤5：通过 SSH 构建 Docker 镜像
+      # 步骤7：通过 SSH 构建 Docker 镜像
       - name: Build Docker image on server
         run: |
           ssh -o StrictHostKeyChecking=no -i deploy_key ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
@@ -59,7 +70,7 @@ jobs:
           docker build -t usercenter-backend:v0.0.1 .
           EOF
 
-      # 步骤6：通过 SSH 复制 SSL 证书到服务器
+      # 步骤8：通过 SSH 复制 SSL 证书到服务器
       - name: Copy SSL certs via SSH
         uses: appleboy/scp-action@v0.1.1
         with:
@@ -70,7 +81,7 @@ jobs:
           strip_components: 3
           target: "/docker-data/nginx/cert/usercenter-backend-cert/"
 
-      # 步骤7：通过 SSH 复制 Nginx 配置文件到服务器
+      # 步骤9：通过 SSH 复制 Nginx 配置文件到服务器
       - name: Copy Nginx config via SSH
         uses: appleboy/scp-action@v0.1.1
         with:
@@ -81,7 +92,7 @@ jobs:
           strip_components: 2
           target: "/docker-data/nginx/conf.d/"
 
-      # 步骤8：通过 SSH 重启 Docker 容器
+      # 步骤10：通过 SSH 重启 Docker 容器
       - name: Restart Docker container
         run: |
           ssh -o StrictHostKeyChecking=no -i deploy_key ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
